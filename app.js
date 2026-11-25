@@ -175,11 +175,19 @@ function renderGame(event, config) {
 }
 function renderTeam(competitor) {
   const team = competitor.team || {};
-  const logo = team.logo ? `<img src="${safeText(team.logo)}" alt="" loading="lazy" />` : `<span class="team-monogram">${safeText(team.abbreviation || team.shortDisplayName?.slice(0, 2) || '—')}</span>`;
+  const logoSrc = String(team.id) === IOWA_ID ? './assets/iowa-tigerhawk-gold.png' : team.logo;
+  const logo = logoSrc ? `<img src="${safeText(logoSrc)}" alt="" loading="lazy" />` : `<span class="team-monogram">${safeText(team.abbreviation || team.shortDisplayName?.slice(0, 2) || '—')}</span>`;
+  const isIowa = String(team.id) === IOWA_ID;
+  const displayName = team.displayName || team.name || '';
+  const teamLabel = isIowa ? 'Iowa' : team.location || team.shortDisplayName || team.abbreviation || '';
+  const mascotFromDisplayName = teamLabel && displayName.toLowerCase().startsWith(teamLabel.toLowerCase())
+    ? displayName.slice(teamLabel.length).trim()
+    : '';
+  const teamName = isIowa ? 'Hawkeyes' : mascotFromDisplayName || team.nickname || team.name || team.shortDisplayName || displayName || 'Team';
   const ranking = [competitor.curatedRank?.current, competitor.rank, team.curatedRank?.current, team.rank]
     .map(value => Number(value)).find(value => Number.isInteger(value) && value >= 1 && value <= 25);
   const rankBadge = ranking ? `<span class="team-rank" aria-label="Ranked number ${ranking}">#${ranking}</span>` : '';
-  return `<div class="team-info">${logo}${rankBadge}<span class="team-name">${safeText(team.shortDisplayName || team.displayName || team.name || 'Team')}<small>${safeText(team.abbreviation || '')}</small></span></div>`;
+  return `<div class="team-info">${logo}${rankBadge}<span class="team-name">${safeText(teamName)}<small>${safeText(teamLabel)}</small></span></div>`;
 }
 function renderTeamRow(competitor, scores, periods, config, isHome) {
   const total = displayScore(competitor.score);
